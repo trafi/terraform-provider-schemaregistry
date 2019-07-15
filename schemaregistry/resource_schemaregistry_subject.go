@@ -36,7 +36,7 @@ func resourceSchemaRegistrySubjectSchemaCreate(rd *schema.ResourceData, meta int
 
 	log.Printf("[INFO] Creating Schema Registry schema for subject %s", subject)
 
-	schemaID, err := client.RegisterNewSchema(schema, subject)
+	schemaID, err := client.RegisterNewSchema(subject, schema)
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func resourceSchemaRegistrySubjectSchemaUpdate(rd *schema.ResourceData, meta int
 
 	log.Printf("[INFO] Updating Schema Registry schema for subject '%s'", subject)
 
-	schemaID, err := client.RegisterNewSchema(schema, subject)
+	schemaID, err := client.RegisterNewSchema(subject, schema)
 	if err != nil {
 		return err
 	}
