@@ -10,6 +10,13 @@ import (
 
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
+		Schema: map[string]*schema.Schema{
+			"url": {
+				Type:        schema.TypeString,
+				Required:    true,
+				DefaultFunc: schema.EnvDefaultFunc("SCHEMAREGISTRY_URL", nil),
+			},
+		},
 		ResourcesMap: map[string]*schema.Resource{
 			"schemaregistry_subject_schema": resourceSchemaRegistrySubjectSchema(),
 		},
