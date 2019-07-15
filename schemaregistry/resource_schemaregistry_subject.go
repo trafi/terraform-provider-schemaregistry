@@ -41,7 +41,7 @@ func resourceSchemaRegistrySubjectSchemaCreate(rd *schema.ResourceData, meta int
 		return err
 	}
 
-	rd.SetId(serializeID(subject, schemaID))
+	rd.SetId(strconv.Itoa(schemaID))
 
 	return resourceSchemaRegistrySubjectSchemaRead(rd, meta)
 }
@@ -49,16 +49,22 @@ func resourceSchemaRegistrySubjectSchemaCreate(rd *schema.ResourceData, meta int
 func resourceSchemaRegistrySubjectSchemaRead(rd *schema.ResourceData, meta interface{}) error {
 	client := meta.(*schemaregistry.Client)
 
-	subject, schemaID, err := parseID(rd.Id())
+	schemaID := rd.Id()
 
-	log.Printf("[INFO] Reading Schema Registry schema for subject %s", subject)
+	log.Printf("[INFO] Reading Schema Registry schema for id %s", schemaID)
 
-	schema, err := client.GetSchemaBySubject(subject, schemaID)
+	schemaId, err := strconv.Atoi(schemaID)
+
+	if err != nil {
+		return err
+	}
+
+	schema, err := client.GetSchemaByID(schemaId)
 	if err != nil {
 		return handleNotFoundError(err, rd)
 	}
 
-	err = rd.Set("schema", schema.Schema)
+	err = rd.Set("schema", schema)
 
 	return nil
 }
