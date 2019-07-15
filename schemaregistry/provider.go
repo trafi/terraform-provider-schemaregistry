@@ -11,7 +11,7 @@ import (
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
-			"schema_registry_subject_schema": resourceSchemaRegistrySubjectSchema(),
+			"schemaregistry_subject_schema": resourceSchemaRegistrySubjectSchema(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

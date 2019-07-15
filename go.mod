@@ -1,4 +1,4 @@
-module github.com/trafi/terraform-provider-schema-registry
+module github.com/trafi/terraform-provider-schemaregistry
 
 require (
 	github.com/Landoop/schema-registry v0.0.0-20190327143759-50a5701c1891
