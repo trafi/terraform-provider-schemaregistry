@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/structure"
 
 	"github.com/Landoop/schema-registry"
 )
@@ -23,6 +24,11 @@ func resourceSchemaRegistrySubjectSchema() *schema.Resource {
 			"schema": {
 				Type:     schema.TypeString,
 				Required: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					newJson, _ := structure.NormalizeJsonString(new)
+					oldJson, _ := structure.NormalizeJsonString(old)
+					return newJson == oldJson
+				},
 			},
 		},
 	}
