@@ -3,12 +3,16 @@ package schemaregistry
 import (
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/structure"
 
 	"github.com/Landoop/schema-registry"
 )
+
+// Terraform resource ID separator
+const IDSeparator = "___"
 
 func resourceSchemaRegistrySubjectSchema() *schema.Resource {
 	return &schema.Resource{
@@ -25,9 +29,9 @@ func resourceSchemaRegistrySubjectSchema() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					newJson, _ := structure.NormalizeJsonString(new)
-					oldJson, _ := structure.NormalizeJsonString(old)
-					return newJson == oldJson
+					newJSON, _ := structure.NormalizeJsonString(new)
+					oldJSON, _ := structure.NormalizeJsonString(old)
+					return newJSON == oldJSON
 				},
 			},
 		},
@@ -42,12 +46,17 @@ func resourceSchemaRegistrySubjectSchemaCreate(rd *schema.ResourceData, meta int
 
 	log.Printf("[INFO] Creating Schema Registry schema for subject %s", subject)
 
-	schemaID, err := client.RegisterNewSchema(subject, schema)
+	_, err := client.RegisterNewSchema(subject, schema)
 	if err != nil {
 		return err
 	}
 
-	rd.SetId(strconv.Itoa(schemaID))
+	schemaDefinition, err := client.GetLatestSchema(subject)
+	if err != nil {
+		return err
+	}
+
+	rd.SetId(subject + IDSeparator + strconv.Itoa(schemaDefinition.Version))
 
 	return resourceSchemaRegistrySubjectSchemaRead(rd, meta)
 }
@@ -55,19 +64,23 @@ func resourceSchemaRegistrySubjectSchemaCreate(rd *schema.ResourceData, meta int
 func resourceSchemaRegistrySubjectSchemaRead(rd *schema.ResourceData, meta interface{}) error {
 	client := meta.(*schemaregistry.Client)
 
-	schemaID := rd.Id()
+	ID := strings.Split(rd.Id(), IDSeparator)
+	subject := ID[0]
+	schemaID := ID[1]
 
-	log.Printf("[INFO] Reading Schema Registry schema for id %s", schemaID)
+	log.Printf("[INFO] Reading Schema Registry schema for subject %s with id %s", subject, schemaID)
 
-	schemaId, err := strconv.Atoi(schemaID)
+	subjectSchemaID, err := strconv.Atoi(schemaID)
 
 	if err != nil {
 		return err
 	}
 
-	schema, err := client.GetSchemaByID(schemaId)
+	schema, err := client.GetSchemaBySubject(subject, subjectSchemaID)
 	if err != nil {
-		return handleNotFoundError(err, rd)
+		log.Printf("[WARN] Removing %s from Terraform state because it's gone", rd.Id())
+		rd.SetId("")
+		return nil
 	}
 
 	err = rd.Set("schema", schema)
@@ -83,12 +96,17 @@ func resourceSchemaRegistrySubjectSchemaUpdate(rd *schema.ResourceData, meta int
 
 	log.Printf("[INFO] Updating Schema Registry schema for subject '%s'", subject)
 
-	schemaID, err := client.RegisterNewSchema(subject, schema)
+	_, err := client.RegisterNewSchema(subject, schema)
 	if err != nil {
 		return err
 	}
 
-	rd.SetId(strconv.Itoa(schemaID))
+	schemaDefinition, err := client.GetLatestSchema(subject)
+	if err != nil {
+		return err
+	}
+
+	rd.SetId(subject + IDSeparator + strconv.Itoa(schemaDefinition.Version))
 
 	return resourceSchemaRegistrySubjectSchemaRead(rd, meta)
 }
@@ -96,7 +114,8 @@ func resourceSchemaRegistrySubjectSchemaUpdate(rd *schema.ResourceData, meta int
 func resourceSchemaRegistrySubjectSchemaDelete(rd *schema.ResourceData, meta interface{}) error {
 	client := meta.(*schemaregistry.Client)
 
-	subject := rd.Get("subject").(string)
+	ID := strings.Split(rd.Id(), IDSeparator)
+	subject := ID[0]
 
 	log.Printf("[INFO] Deleting Schema Registry subject '%s'", subject)
 
