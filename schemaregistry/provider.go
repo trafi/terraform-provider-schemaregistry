@@ -1,8 +1,6 @@
 package schemaregistry
 
 import (
-	"fmt"
-	"github.com/Landoop/schema-registry"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"log"
@@ -32,14 +30,4 @@ func providerConfigure(data *schema.ResourceData) (interface{}, error) {
 	log.Println("[INFO] Initializing Schema Registry client")
 
 	return config.Client()
-}
-
-func handleNotFoundError(err error, rd *schema.ResourceData) error {
-	if srerr, ok := err.(*schemaregistry.ResourceError); ok && srerr.ErrorCode == 404 {
-		log.Printf("[WARN] Removing %s from Terraform state because it's gone", rd.Id())
-		rd.SetId("")
-		return nil
-	}
-
-	return fmt.Errorf("Error reading: %s: %s", rd.Id(), err)
 }
