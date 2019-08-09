@@ -18,6 +18,9 @@ func Provider() terraform.ResourceProvider {
 		ResourcesMap: map[string]*schema.Resource{
 			"schemaregistry_subject_schema": resourceSchemaRegistrySubjectSchema(),
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"schemaregistry_schema_compatibility": dataSourceSchemaRegistrySchemaCompatibility(),
+		},
 		ConfigureFunc: providerConfigure,
 	}
 }
