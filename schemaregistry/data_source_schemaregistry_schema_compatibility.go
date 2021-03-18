@@ -1,9 +1,8 @@
 package schemaregistry
 
 import (
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"log"
-
-	"github.com/hashicorp/terraform/helper/schema"
 
 	"github.com/Landoop/schema-registry"
 )

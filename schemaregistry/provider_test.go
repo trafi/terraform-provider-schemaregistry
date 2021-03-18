@@ -1,9 +1,8 @@
 package schemaregistry
 
 import (
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"testing"
-
-	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func TestProvider(t *testing.T) {

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/hashicorp/terraform/plugin"
-	schemaregistry "github.com/trafi/terraform-provider-schemaregistry/schemaregistry"
+	"github.com/hashicorp/terraform-plugin-sdk/plugin"
+	"github.com/trafi/terraform-provider-schemaregistry/schemaregistry"
 )
 
 func main() {
